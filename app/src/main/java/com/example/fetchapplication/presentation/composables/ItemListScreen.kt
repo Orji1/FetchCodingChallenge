@@ -1,5 +1,6 @@
 package com.example.fetchapplication.presentation.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,9 +9,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,33 +36,46 @@ fun ItemListScreen(
     Column(
         modifier = modifier.padding(horizontal = 16.dp)
     ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            listOf(
-                stringResource(R.string.list_id),
-                stringResource(R.string.name),
-                stringResource(R.string.id)
-            ).forEach { header ->
-                HeaderText(header)
-            }
-        }
         Column(
             Modifier
                 .fillMaxSize()
                 .padding(vertical = 16.dp)
-                .verticalScroll(rememberScrollState())
         ) {
 
-            uiState.itemList?.forEach { item ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    listOf(item.listId.toString(), item.name, item.id.toString()).forEach {
-                        it?.let { ItemText(it) }
-                    }
+            Text(
+                stringResource(R.string.view_instruction),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
+                lineHeight = 24.sp
+            )
+
+            uiState.mapItemList?.map {
+                val displayItems = remember { mutableStateOf(false) }
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 3.dp)
+                        .clickable { displayItems.value = !displayItems.value },
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    HeaderText(stringResource(R.string.list_id, it.key.toString()))
+                    Icon(
+                        imageVector = if (displayItems.value) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                        contentDescription = ""
+                    )
+                }
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    if (displayItems.value)
+                        it.value.map { item ->
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                ItemText(item.name.toString())
+                                ItemText(item.id.toString())
+                            }
+                        }
                 }
             }
         }
@@ -67,7 +86,6 @@ fun ItemListScreen(
 private fun HeaderText(text: String) {
     Text(
         text = text,
-        textAlign = TextAlign.Center,
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold
     )
@@ -77,7 +95,6 @@ private fun HeaderText(text: String) {
 private fun ItemText(text: String) {
     Text(
         text = text,
-        fontSize = 16.sp,
-        textAlign = TextAlign.End
+        fontSize = 16.sp
     )
 }

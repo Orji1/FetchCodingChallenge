@@ -22,18 +22,19 @@ class ItemListViewModel(private val itemListRepository: ItemListRepository) : Vi
     val uiState = _uiState.asStateFlow()
 
     init {
-        getItemList()
+        getMapItemList()
     }
 
     /**
-     * Extension class to sort the list by its listId and then by its name
+     * Extension class to group and sort the list by its listId and then by its name
      * while filtering out all null and blank names
      */
     private fun List<Item>.sortByListId() = filterNot {
         it.name.isNullOrBlank()
     }.sortedWith(compareBy<Item> { it.listId }.thenBy { it.name?.split(" ")?.get(1)?.toInt() })
+        .groupBy { it.listId }
 
-    private fun getItemList() {
+    private fun getMapItemList() {
         viewModelScope.launch {
             itemListRepository.getItemList().collectLatest { result ->
                 when (result) {
@@ -48,10 +49,10 @@ class ItemListViewModel(private val itemListRepository: ItemListRepository) : Vi
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                itemList = result.data?.sortByListId()
+                                mapItemList = result.data?.sortByListId()
                             )
                         }
-                        Log.d(TAG, "Success ${_uiState.value.itemList}")
+                        Log.d(TAG, "Success ${_uiState.value.mapItemList}")
                     }
 
                     is Resource.Error -> {

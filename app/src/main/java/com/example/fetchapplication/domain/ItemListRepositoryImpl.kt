@@ -10,8 +10,7 @@ class ItemListRepositoryImpl(private val itemListApi: ItemListApi) :
     ItemListRepository {
     override suspend fun getItemList() = flow {
         emit(Resource.Loading())
-        val result =
-            itemListApi.getItemList()
+        val result = itemListApi.getItemList()
         emit(Resource.Success(result))
     }.catch {
         emit(Resource.Error(it.message.toString()))
